@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Add Job{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 760px; margin: 0 auto;">
+  <h1 class="page-title">Add Job</h1>
+  <p class="page-subtitle">Enter the job information below.</p>
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="company_id">Company</label>
+      <select id="company_id" name="company_id" class="form-control" required>
+        <option value="">Select a company</option>
+        {% for company in companies %}
+          <option value="{{ company[0] }}">{{ company[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="job_title">Job Title</label>
+      <input type="text" id="job_title" name="job_title" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+      <label for="job_type">Job Type</label>
+      <select id="job_type" name="job_type" class="form-control">
+        <option value="">Select type</option>
+        <option value="Full-time">Full-time</option>
+        <option value="Part-time">Part-time</option>
+        <option value="Contract">Contract</option>
+        <option value="Internship">Internship</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="salary_min">Salary Min</label>
+      <input type="number" id="salary_min" name="salary_min" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="salary_max">Salary Max</label>
+      <input type="number" id="salary_max" name="salary_max" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="date_posted">Date Posted</label>
+      <input type="date" id="date_posted" name="date_posted" class="form-control">
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">+ Add Job</button>
+      <a href="/jobs" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

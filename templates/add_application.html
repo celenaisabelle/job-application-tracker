@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Add Application{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 760px; margin: 0 auto;">
+  <h1 class="page-title">Add Application</h1>
+  <p class="page-subtitle">Enter the application information below.</p>
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="job_id">Job</label>
+      <select id="job_id" name="job_id" class="form-control" required>
+        <option value="">Select a job</option>
+        {% for job in jobs %}
+          <option value="{{ job[0] }}">{{ job[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="application_date">Application Date</label>
+      <input type="date" id="application_date" name="application_date" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select id="status" name="status" class="form-control" required>
+        <option value="">Select status</option>
+        <option value="Applied">Applied</option>
+        <option value="Screening">Screening</option>
+        <option value="Interview">Interview</option>
+        <option value="Offer">Offer</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Withdrawn">Withdrawn</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="resume_version">Resume Version</label>
+      <input type="text" id="resume_version" name="resume_version" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="cover_letter_sent">
+        Cover Letter Sent
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">+ Add Application</button>
+      <a href="/applications" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

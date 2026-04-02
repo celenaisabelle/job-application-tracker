@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1 class="page-title">Jobs</h1>
+  <p class="page-subtitle">Manage your saved job postings.</p>
+
+  <div class="btn-row">
+    <a href="/add_job" class="btn btn-primary">+ Add Job</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Job Title</th>
+          <th>Company</th>
+          <th>Type</th>
+          <th>Salary Range</th>
+          <th>Date Posted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>{{ job[1] }}</td>
+          <td>{{ job[2] }}</td>
+          <td>{{ job[3] }}</td>
+          <td>
+            {% if job[4] and job[5] %}
+              ${{ job[4] }} - ${{ job[5] }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>{{ job[6] or 'N/A' }}</td>
+          <td>
+            <div class="actions">
+              <a href="/edit_job/{{ job[0] }}" class="btn btn-primary">Edit</a>
+              <a href="/delete_job/{{ job[0] }}" class="btn btn-danger">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

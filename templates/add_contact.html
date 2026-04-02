@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Add Contact{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 760px; margin: 0 auto;">
+  <h1 class="page-title">Add Contact</h1>
+  <p class="page-subtitle">Enter the contact information below.</p>
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="company_id">Company</label>
+      <select id="company_id" name="company_id" class="form-control" required>
+        <option value="">Select a company</option>
+        {% for company in companies %}
+          <option value="{{ company[0] }}">{{ company[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="first_name">First Name</label>
+      <input type="text" id="first_name" name="first_name" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+      <label for="last_name">Last Name</label>
+      <input type="text" id="last_name" name="last_name" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone</label>
+      <input type="text" id="phone" name="phone" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="job_title">Job Title</label>
+      <input type="text" id="job_title" name="job_title" class="form-control">
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">+ Add Contact</button>
+      <a href="/contacts" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

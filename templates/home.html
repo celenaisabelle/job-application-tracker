@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center;">
+  <h1 class="page-title">Job Application Tracker</h1>
+  <p class="page-subtitle">
+    Track your job applications, companies, and progress in one place.
+  </p>
+
+  <div class="btn-row" style="justify-content: center; flex-wrap: wrap;">
+    <a href="/companies" class="btn btn-primary">Companies</a>
+    <a href="/jobs" class="btn btn-primary">Jobs</a>
+    <a href="/applications" class="btn btn-primary">Applications</a>
+    <a href="/contacts" class="btn btn-primary">Contacts</a>
+  </div>
+</div>
+{% endblock %}

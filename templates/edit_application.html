@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Application{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 760px; margin: 0 auto;">
+  <h1 class="page-title">Edit Application</h1>
+  <p class="page-subtitle">Update the application information below.</p>
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="job_id">Job</label>
+      <select id="job_id" name="job_id" class="form-control" required>
+        {% for job in jobs %}
+          <option value="{{ job[0] }}" {% if job[0] == application[1] %}selected{% endif %}>
+            {{ job[1] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="application_date">Application Date</label>
+      <input type="date" id="application_date" name="application_date" class="form-control" value="{{ application[2] }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select id="status" name="status" class="form-control" required>
+        <option value="Applied" {% if application[3] == 'Applied' %}selected{% endif %}>Applied</option>
+        <option value="Screening" {% if application[3] == 'Screening' %}selected{% endif %}>Screening</option>
+        <option value="Interview" {% if application[3] == 'Interview' %}selected{% endif %}>Interview</option>
+        <option value="Offer" {% if application[3] == 'Offer' %}selected{% endif %}>Offer</option>
+        <option value="Rejected" {% if application[3] == 'Rejected' %}selected{% endif %}>Rejected</option>
+        <option value="Withdrawn" {% if application[3] == 'Withdrawn' %}selected{% endif %}>Withdrawn</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="resume_version">Resume Version</label>
+      <input type="text" id="resume_version" name="resume_version" class="form-control" value="{{ application[4] or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="cover_letter_sent" {% if application[5] %}checked{% endif %}>
+        Cover Letter Sent
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="/applications" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
