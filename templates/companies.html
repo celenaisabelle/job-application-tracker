@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Companies{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1 class="page-title">Companies</h1>
+  <p class="page-subtitle">Manage your saved companies.</p>
+
+  <div class="btn-row">
+    <a href="/add_company" class="btn btn-primary">+ Add Company</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Industry</th>
+          <th>City</th>
+          <th>State</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for company in companies %}
+        <tr>
+          <td>{{ company[1] }}</td>
+          <td>{{ company[2] }}</td>
+          <td>{{ company[4] }}</td>
+          <td>{{ company[5] }}</td>
+          <td>
+            <div class="actions">
+              <a href="/edit_company/{{ company[0] }}" class="btn btn-primary">Edit</a>
+              <a href="/delete_company/{{ company[0] }}" class="btn btn-danger">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
