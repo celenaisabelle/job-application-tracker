@@ -16,4 +16,34 @@
     <a href="/contacts" class="btn btn-primary">Contacts</a>
   </div>
 </div>
+
+<!-- DASHBOARD SECTION -->
+<div class="card" style="margin-top: 30px;">
+  <h1 class="page-title">Dashboard</h1>
+  <p class="page-subtitle">Overview of your job search progress.</p>
+
+  <div class="dashboard-grid">
+
+    <div class="dashboard-card">
+      <h2>{{ companies_count }}</h2>
+      <p>Companies</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h2>{{ jobs_count }}</h2>
+      <p>Jobs</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h2>{{ applications_count }}</h2>
+      <p>Applications</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h2>{{ contacts_count }}</h2>
+      <p>Contacts</p>
+    </div>
+
+  </div>
+</div>
 {% endblock %}

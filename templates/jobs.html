@@ -15,11 +15,15 @@
     <table>
       <thead>
         <tr>
-          <th>Job Title</th>
           <th>Company</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Salary</th>
           <th>Type</th>
-          <th>Salary Range</th>
+          <th>Posting URL</th>
           <th>Date Posted</th>
+          <th>Active</th>
+          <th>Created</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -28,7 +32,7 @@
         <tr>
           <td>{{ job[1] }}</td>
           <td>{{ job[2] }}</td>
-          <td>{{ job[3] }}</td>
+          <td>{{ job[3] or 'N/A' }}</td>
           <td>
             {% if job[4] and job[5] %}
               ${{ job[4] }} - ${{ job[5] }}
@@ -37,6 +41,16 @@
             {% endif %}
           </td>
           <td>{{ job[6] or 'N/A' }}</td>
+          <td>
+            {% if job[7] %}
+              <a href="{{ job[7] }}" target="_blank">View</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>{{ job[8] or 'N/A' }}</td>
+          <td>{% if job[9] %}Yes{% else %}No{% endif %}</td>
+          <td>{{ job[10] }}</td>
           <td>
             <div class="actions">
               <a href="/edit_job/{{ job[0] }}" class="btn btn-primary">Edit</a>

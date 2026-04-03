@@ -19,7 +19,10 @@
           <th>Email</th>
           <th>Phone</th>
           <th>Job Title</th>
+          <th>LinkedIn</th>
+          <th>Notes</th>
           <th>Company</th>
+          <th>Created</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -30,7 +33,16 @@
           <td>{{ contact[3] or 'N/A' }}</td>
           <td>{{ contact[4] or 'N/A' }}</td>
           <td>{{ contact[5] or 'N/A' }}</td>
-          <td>{{ contact[6] }}</td>
+          <td>
+            {% if contact[6] %}
+              <a href="{{ contact[6] }}" target="_blank">Profile</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>{{ contact[7] or 'N/A' }}</td>
+          <td>{{ contact[8] }}</td>
+          <td>{{ contact[9] }}</td>
           <td>
             <div class="actions">
               <a href="/edit_contact/{{ contact[0] }}" class="btn btn-primary">Edit</a>

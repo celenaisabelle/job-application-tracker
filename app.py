@@ -3,16 +3,80 @@ from database import get_connection
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def home():
-    return render_template("home.html")
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM companies")
+    companies_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM jobs")
+    jobs_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM applications")
+    applications_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM contacts")
+    contacts_count = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "home.html",
+        companies_count=companies_count,
+        jobs_count=jobs_count,
+        applications_count=applications_count,
+        contacts_count=contacts_count
+    )
+
+
+@app.route("/job_match", methods=["GET", "POST"])
+def job_match():
+    results = []
+    keyword = ""
+
+    if request.method == "POST":
+        keyword = request.form["keyword"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT j.job_title, c.company_name, j.job_type, j.posting_url
+            FROM jobs j
+            JOIN companies c ON j.company_id = c.company_id
+            WHERE j.job_title LIKE %s
+               OR j.job_description LIKE %s
+               OR j.job_type LIKE %s
+               OR j.posting_url LIKE %s
+            ORDER BY j.job_id DESC
+        """, (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"))
+
+        results = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+    return render_template("job_match.html", results=results, keyword=keyword)
+
+
+# -------------------------
+# COMPANIES
+# -------------------------
 
 @app.route("/companies")
 def companies():
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM companies")
+    cursor.execute("""
+        SELECT company_id, company_name, industry, website, city, state, notes, created_at
+        FROM companies
+        ORDER BY company_id DESC
+    """)
     companies = cursor.fetchall()
 
     cursor.close()
@@ -20,21 +84,24 @@ def companies():
 
     return render_template("companies.html", companies=companies)
 
+
 @app.route("/add_company", methods=["GET", "POST"])
 def add_company():
     if request.method == "POST":
-        name = request.form["name"]
+        company_name = request.form["company_name"]
         industry = request.form["industry"]
+        website = request.form["website"]
         city = request.form["city"]
         state = request.form["state"]
+        notes = request.form["notes"]
 
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute(
-            "INSERT INTO companies (company_name, industry, city, state) VALUES (%s, %s, %s, %s)",
-            (name, industry, city, state)
-        )
+        cursor.execute("""
+            INSERT INTO companies (company_name, industry, website, city, state, notes)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (company_name, industry, website, city, state, notes))
 
         conn.commit()
         cursor.close()
@@ -44,26 +111,63 @@ def add_company():
 
     return render_template("add_company.html")
 
+
+@app.route("/edit_company/<int:id>", methods=["GET", "POST"])
+def edit_company(id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        company_name = request.form["company_name"]
+        industry = request.form["industry"]
+        website = request.form["website"]
+        city = request.form["city"]
+        state = request.form["state"]
+        notes = request.form["notes"]
+
+        cursor.execute("""
+            UPDATE companies
+            SET company_name = %s,
+                industry = %s,
+                website = %s,
+                city = %s,
+                state = %s,
+                notes = %s
+            WHERE company_id = %s
+        """, (company_name, industry, website, city, state, notes, id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return redirect("/companies")
+
+    cursor.execute("""
+        SELECT company_id, company_name, industry, website, city, state, notes, created_at
+        FROM companies
+        WHERE company_id = %s
+    """, (id,))
+    company = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("edit_company.html", company=company)
+
+
 @app.route("/delete_company/<int:id>")
 def delete_company(id):
     conn = get_connection()
     cursor = conn.cursor()
 
-    # find jobs for this company
     cursor.execute("SELECT job_id FROM jobs WHERE company_id = %s", (id,))
     jobs = cursor.fetchall()
 
-    # delete applications tied to those jobs
     for job in jobs:
         cursor.execute("DELETE FROM applications WHERE job_id = %s", (job[0],))
 
-    # delete contacts tied to company
     cursor.execute("DELETE FROM contacts WHERE company_id = %s", (id,))
-
-    # delete jobs tied to company
     cursor.execute("DELETE FROM jobs WHERE company_id = %s", (id,))
-
-    # delete company
     cursor.execute("DELETE FROM companies WHERE company_id = %s", (id,))
 
     conn.commit()
@@ -72,39 +176,10 @@ def delete_company(id):
 
     return redirect("/companies")
 
-@app.route("/edit_company/<int:id>", methods=["GET", "POST"])
-def edit_company(id):
-    conn = get_connection()
-    cursor = conn.cursor()
 
-    if request.method == "POST":
-        name = request.form["name"]
-        industry = request.form["industry"]
-        city = request.form["city"]
-        state = request.form["state"]
-
-        cursor.execute("""
-            UPDATE companies
-            SET company_name = %s,
-                industry = %s,
-                city = %s,
-                state = %s
-            WHERE company_id = %s
-        """, (name, industry, city, state, id))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return redirect("/companies")
-
-    cursor.execute("SELECT * FROM companies WHERE company_id = %s", (id,))
-    company = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    return render_template("edit_company.html", company=company)
+# -------------------------
+# JOBS
+# -------------------------
 
 @app.route("/jobs")
 def jobs():
@@ -112,8 +187,17 @@ def jobs():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT j.job_id, j.job_title, c.company_name, j.job_type,
-               j.salary_min, j.salary_max, j.date_posted
+        SELECT j.job_id,
+               c.company_name,
+               j.job_title,
+               j.job_description,
+               j.salary_min,
+               j.salary_max,
+               j.job_type,
+               j.posting_url,
+               j.date_posted,
+               j.is_active,
+               j.created_at
         FROM jobs j
         JOIN companies c ON j.company_id = c.company_id
         ORDER BY j.job_id DESC
@@ -134,15 +218,24 @@ def add_job():
     if request.method == "POST":
         company_id = request.form["company_id"]
         job_title = request.form["job_title"]
-        job_type = request.form["job_type"]
+        job_description = request.form["job_description"]
         salary_min = request.form["salary_min"] or None
         salary_max = request.form["salary_max"] or None
+        job_type = request.form["job_type"]
+        posting_url = request.form["posting_url"]
         date_posted = request.form["date_posted"] or None
+        is_active = 1 if request.form.get("is_active") else 0
 
         cursor.execute("""
-            INSERT INTO jobs (company_id, job_title, job_type, salary_min, salary_max, date_posted)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (company_id, job_title, job_type, salary_min, salary_max, date_posted))
+            INSERT INTO jobs (
+                company_id, job_title, job_description, salary_min, salary_max,
+                job_type, posting_url, date_posted, is_active
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            company_id, job_title, job_description, salary_min, salary_max,
+            job_type, posting_url, date_posted, is_active
+        ))
 
         conn.commit()
         cursor.close()
@@ -167,21 +260,30 @@ def edit_job(id):
     if request.method == "POST":
         company_id = request.form["company_id"]
         job_title = request.form["job_title"]
-        job_type = request.form["job_type"]
+        job_description = request.form["job_description"]
         salary_min = request.form["salary_min"] or None
         salary_max = request.form["salary_max"] or None
+        job_type = request.form["job_type"]
+        posting_url = request.form["posting_url"]
         date_posted = request.form["date_posted"] or None
+        is_active = 1 if request.form.get("is_active") else 0
 
         cursor.execute("""
             UPDATE jobs
             SET company_id = %s,
                 job_title = %s,
-                job_type = %s,
+                job_description = %s,
                 salary_min = %s,
                 salary_max = %s,
-                date_posted = %s
+                job_type = %s,
+                posting_url = %s,
+                date_posted = %s,
+                is_active = %s
             WHERE job_id = %s
-        """, (company_id, job_title, job_type, salary_min, salary_max, date_posted, id))
+        """, (
+            company_id, job_title, job_description, salary_min, salary_max,
+            job_type, posting_url, date_posted, is_active, id
+        ))
 
         conn.commit()
         cursor.close()
@@ -189,7 +291,12 @@ def edit_job(id):
 
         return redirect("/jobs")
 
-    cursor.execute("SELECT * FROM jobs WHERE job_id = %s", (id,))
+    cursor.execute("""
+        SELECT job_id, company_id, job_title, job_description, salary_min, salary_max,
+               job_type, posting_url, date_posted, is_active, created_at
+        FROM jobs
+        WHERE job_id = %s
+    """, (id,))
     job = cursor.fetchone()
 
     cursor.execute("SELECT company_id, company_name FROM companies ORDER BY company_name")
@@ -215,6 +322,11 @@ def delete_job(id):
 
     return redirect("/jobs")
 
+
+# -------------------------
+# APPLICATIONS
+# -------------------------
+
 @app.route("/applications")
 def applications():
     conn = get_connection()
@@ -223,12 +335,18 @@ def applications():
     cursor.execute("""
         SELECT a.application_id,
                j.job_title,
+               c.company_name,
                a.application_date,
                a.status,
                a.resume_version,
-               a.cover_letter_sent
+               a.cover_letter_sent,
+               a.response_date,
+               a.interview_date,
+               a.notes,
+               a.created_at
         FROM applications a
         JOIN jobs j ON a.job_id = j.job_id
+        JOIN companies c ON j.company_id = c.company_id
         ORDER BY a.application_id DESC
     """)
     applications = cursor.fetchall()
@@ -250,11 +368,20 @@ def add_application():
         status = request.form["status"]
         resume_version = request.form["resume_version"]
         cover_letter_sent = 1 if request.form.get("cover_letter_sent") else 0
+        response_date = request.form["response_date"] or None
+        interview_date = request.form["interview_date"] or None
+        notes = request.form["notes"]
 
         cursor.execute("""
-            INSERT INTO applications (job_id, application_date, status, resume_version, cover_letter_sent)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (job_id, application_date, status, resume_version, cover_letter_sent))
+            INSERT INTO applications (
+                job_id, application_date, status, resume_version,
+                cover_letter_sent, response_date, interview_date, notes
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            job_id, application_date, status, resume_version,
+            cover_letter_sent, response_date, interview_date, notes
+        ))
 
         conn.commit()
         cursor.close()
@@ -262,7 +389,12 @@ def add_application():
 
         return redirect("/applications")
 
-    cursor.execute("SELECT job_id, job_title FROM jobs ORDER BY job_title")
+    cursor.execute("""
+        SELECT j.job_id, j.job_title, c.company_name
+        FROM jobs j
+        JOIN companies c ON j.company_id = c.company_id
+        ORDER BY j.job_title
+    """)
     jobs = cursor.fetchall()
 
     cursor.close()
@@ -282,6 +414,9 @@ def edit_application(id):
         status = request.form["status"]
         resume_version = request.form["resume_version"]
         cover_letter_sent = 1 if request.form.get("cover_letter_sent") else 0
+        response_date = request.form["response_date"] or None
+        interview_date = request.form["interview_date"] or None
+        notes = request.form["notes"]
 
         cursor.execute("""
             UPDATE applications
@@ -289,9 +424,15 @@ def edit_application(id):
                 application_date = %s,
                 status = %s,
                 resume_version = %s,
-                cover_letter_sent = %s
+                cover_letter_sent = %s,
+                response_date = %s,
+                interview_date = %s,
+                notes = %s
             WHERE application_id = %s
-        """, (job_id, application_date, status, resume_version, cover_letter_sent, id))
+        """, (
+            job_id, application_date, status, resume_version,
+            cover_letter_sent, response_date, interview_date, notes, id
+        ))
 
         conn.commit()
         cursor.close()
@@ -299,10 +440,20 @@ def edit_application(id):
 
         return redirect("/applications")
 
-    cursor.execute("SELECT * FROM applications WHERE application_id = %s", (id,))
+    cursor.execute("""
+        SELECT application_id, job_id, application_date, status, resume_version,
+               cover_letter_sent, response_date, interview_date, notes, created_at
+        FROM applications
+        WHERE application_id = %s
+    """, (id,))
     application = cursor.fetchone()
 
-    cursor.execute("SELECT job_id, job_title FROM jobs ORDER BY job_title")
+    cursor.execute("""
+        SELECT j.job_id, j.job_title, c.company_name
+        FROM jobs j
+        JOIN companies c ON j.company_id = c.company_id
+        ORDER BY j.job_title
+    """)
     jobs = cursor.fetchall()
 
     cursor.close()
@@ -324,6 +475,11 @@ def delete_application(id):
 
     return redirect("/applications")
 
+
+# -------------------------
+# CONTACTS
+# -------------------------
+
 @app.route("/contacts")
 def contacts():
     conn = get_connection()
@@ -331,10 +487,15 @@ def contacts():
 
     cursor.execute("""
         SELECT ct.contact_id,
-               ct.contact_name,
+               ct.first_name,
+               ct.last_name,
                ct.email,
                ct.phone,
-               cp.company_name
+               ct.job_title,
+               ct.linkedin_url,
+               ct.notes,
+               cp.company_name,
+               ct.created_at
         FROM contacts ct
         JOIN companies cp ON ct.company_id = cp.company_id
         ORDER BY ct.contact_id DESC
@@ -354,14 +515,24 @@ def add_contact():
 
     if request.method == "POST":
         company_id = request.form["company_id"]
-        contact_name = request.form["contact_name"]
+        first_name = request.form["first_name"]
+        last_name = request.form["last_name"]
         email = request.form["email"]
         phone = request.form["phone"]
+        job_title = request.form["job_title"]
+        linkedin_url = request.form["linkedin_url"]
+        notes = request.form["notes"]
 
         cursor.execute("""
-            INSERT INTO contacts (company_id, contact_name, email, phone)
-            VALUES (%s, %s, %s, %s)
-        """, (company_id, contact_name, email, phone))
+            INSERT INTO contacts (
+                company_id, first_name, last_name, email, phone,
+                job_title, linkedin_url, notes
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            company_id, first_name, last_name, email, phone,
+            job_title, linkedin_url, notes
+        ))
 
         conn.commit()
         cursor.close()
@@ -369,11 +540,7 @@ def add_contact():
 
         return redirect("/contacts")
 
-    cursor.execute("""
-        SELECT company_id, company_name
-        FROM companies
-        ORDER BY company_name
-    """)
+    cursor.execute("SELECT company_id, company_name FROM companies ORDER BY company_name")
     companies = cursor.fetchall()
 
     cursor.close()
@@ -389,18 +556,29 @@ def edit_contact(id):
 
     if request.method == "POST":
         company_id = request.form["company_id"]
-        contact_name = request.form["contact_name"]
+        first_name = request.form["first_name"]
+        last_name = request.form["last_name"]
         email = request.form["email"]
         phone = request.form["phone"]
+        job_title = request.form["job_title"]
+        linkedin_url = request.form["linkedin_url"]
+        notes = request.form["notes"]
 
         cursor.execute("""
             UPDATE contacts
             SET company_id = %s,
-                contact_name = %s,
+                first_name = %s,
+                last_name = %s,
                 email = %s,
-                phone = %s
+                phone = %s,
+                job_title = %s,
+                linkedin_url = %s,
+                notes = %s
             WHERE contact_id = %s
-        """, (company_id, contact_name, email, phone, id))
+        """, (
+            company_id, first_name, last_name, email, phone,
+            job_title, linkedin_url, notes, id
+        ))
 
         conn.commit()
         cursor.close()
@@ -409,17 +587,14 @@ def edit_contact(id):
         return redirect("/contacts")
 
     cursor.execute("""
-        SELECT *
+        SELECT contact_id, company_id, first_name, last_name, email,
+               phone, job_title, linkedin_url, notes, created_at
         FROM contacts
         WHERE contact_id = %s
     """, (id,))
     contact = cursor.fetchone()
 
-    cursor.execute("""
-        SELECT company_id, company_name
-        FROM companies
-        ORDER BY company_name
-    """)
+    cursor.execute("SELECT company_id, company_name FROM companies ORDER BY company_name")
     companies = cursor.fetchall()
 
     cursor.close()
@@ -433,10 +608,7 @@ def delete_contact(id):
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        DELETE FROM contacts
-        WHERE contact_id = %s
-    """, (id,))
+    cursor.execute("DELETE FROM contacts WHERE contact_id = %s", (id,))
     conn.commit()
 
     cursor.close()
@@ -444,57 +616,6 @@ def delete_contact(id):
 
     return redirect("/contacts")
 
-@app.route("/dashboard")
-def dashboard():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT COUNT(*) FROM companies")
-    companies_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM jobs")
-    jobs_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM applications")
-    applications_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM contacts")
-    contacts_count = cursor.fetchone()[0]
-
-    cursor.close()
-    conn.close()
-
-    return render_template(
-        "dashboard.html",
-        companies_count=companies_count,
-        jobs_count=jobs_count,
-        applications_count=applications_count,
-        contacts_count=contacts_count
-    )
-
-@app.route("/job_match", methods=["GET", "POST"])
-def job_match():
-    results = []
-
-    if request.method == "POST":
-        keyword = request.form["keyword"]
-
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT job_title, job_type
-            FROM jobs
-            WHERE job_title LIKE %s
-               OR job_type LIKE %s
-        """, (f"%{keyword}%", f"%{keyword}%"))
-
-        results = cursor.fetchall()
-
-        cursor.close()
-        conn.close()
-
-    return render_template("job_match.html", results=results)
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5001, debug=True)
+    app.run(host="127.0.0.1", port=5002, debug=True)

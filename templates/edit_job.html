@@ -25,28 +25,40 @@
     </div>
 
     <div class="form-group">
-      <label for="job_type">Job Type</label>
-      <select id="job_type" name="job_type" class="form-control">
-        <option value="Full-time" {% if job[6] == 'Full-time' %}selected{% endif %}>Full-time</option>
-        <option value="Part-time" {% if job[6] == 'Part-time' %}selected{% endif %}>Part-time</option>
-        <option value="Contract" {% if job[6] == 'Contract' %}selected{% endif %}>Contract</option>
-        <option value="Internship" {% if job[6] == 'Internship' %}selected{% endif %}>Internship</option>
-      </select>
+      <label for="job_description">Job Description</label>
+      <textarea id="job_description" name="job_description" class="form-control">{{ job[3] or '' }}</textarea>
     </div>
 
     <div class="form-group">
       <label for="salary_min">Salary Min</label>
-      <input type="number" id="salary_min" name="salary_min" class="form-control" value="{{ job[4] or '' }}">
+      <input type="number" step="0.01" id="salary_min" name="salary_min" class="form-control" value="{{ job[4] or '' }}">
     </div>
 
     <div class="form-group">
       <label for="salary_max">Salary Max</label>
-      <input type="number" id="salary_max" name="salary_max" class="form-control" value="{{ job[5] or '' }}">
+      <input type="number" step="0.01" id="salary_max" name="salary_max" class="form-control" value="{{ job[5] or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label for="job_type">Job Type</label>
+      <input type="text" id="job_type" name="job_type" class="form-control" value="{{ job[6] or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label for="posting_url">Posting URL</label>
+      <input type="text" id="posting_url" name="posting_url" class="form-control" value="{{ job[7] or '' }}">
     </div>
 
     <div class="form-group">
       <label for="date_posted">Date Posted</label>
       <input type="date" id="date_posted" name="date_posted" class="form-control" value="{{ job[8] or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="is_active" {% if job[9] %}checked{% endif %}>
+        Is Active
+      </label>
     </div>
 
     <div class="btn-row">

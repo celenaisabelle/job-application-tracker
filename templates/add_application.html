@@ -13,7 +13,7 @@
       <select id="job_id" name="job_id" class="form-control" required>
         <option value="">Select a job</option>
         {% for job in jobs %}
-          <option value="{{ job[0] }}">{{ job[1] }}</option>
+          <option value="{{ job[0] }}">{{ job[1] }} - {{ job[2] }}</option>
         {% endfor %}
       </select>
     </div>
@@ -25,15 +25,7 @@
 
     <div class="form-group">
       <label for="status">Status</label>
-      <select id="status" name="status" class="form-control" required>
-        <option value="">Select status</option>
-        <option value="Applied">Applied</option>
-        <option value="Screening">Screening</option>
-        <option value="Interview">Interview</option>
-        <option value="Offer">Offer</option>
-        <option value="Rejected">Rejected</option>
-        <option value="Withdrawn">Withdrawn</option>
-      </select>
+      <input type="text" id="status" name="status" class="form-control" value="Applied">
     </div>
 
     <div class="form-group">
@@ -46,6 +38,21 @@
         <input type="checkbox" name="cover_letter_sent">
         Cover Letter Sent
       </label>
+    </div>
+
+    <div class="form-group">
+      <label for="response_date">Response Date</label>
+      <input type="date" id="response_date" name="response_date" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="interview_date">Interview Date</label>
+      <input type="datetime-local" id="interview_date" name="interview_date" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" class="form-control"></textarea>
     </div>
 
     <div class="btn-row">

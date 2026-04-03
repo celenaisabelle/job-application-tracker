@@ -13,7 +13,7 @@
       <select id="job_id" name="job_id" class="form-control" required>
         {% for job in jobs %}
           <option value="{{ job[0] }}" {% if job[0] == application[1] %}selected{% endif %}>
-            {{ job[1] }}
+            {{ job[1] }} - {{ job[2] }}
           </option>
         {% endfor %}
       </select>
@@ -26,14 +26,7 @@
 
     <div class="form-group">
       <label for="status">Status</label>
-      <select id="status" name="status" class="form-control" required>
-        <option value="Applied" {% if application[3] == 'Applied' %}selected{% endif %}>Applied</option>
-        <option value="Screening" {% if application[3] == 'Screening' %}selected{% endif %}>Screening</option>
-        <option value="Interview" {% if application[3] == 'Interview' %}selected{% endif %}>Interview</option>
-        <option value="Offer" {% if application[3] == 'Offer' %}selected{% endif %}>Offer</option>
-        <option value="Rejected" {% if application[3] == 'Rejected' %}selected{% endif %}>Rejected</option>
-        <option value="Withdrawn" {% if application[3] == 'Withdrawn' %}selected{% endif %}>Withdrawn</option>
-      </select>
+      <input type="text" id="status" name="status" class="form-control" value="{{ application[3] or '' }}">
     </div>
 
     <div class="form-group">
@@ -46,6 +39,21 @@
         <input type="checkbox" name="cover_letter_sent" {% if application[5] %}checked{% endif %}>
         Cover Letter Sent
       </label>
+    </div>
+
+    <div class="form-group">
+      <label for="response_date">Response Date</label>
+      <input type="date" id="response_date" name="response_date" class="form-control" value="{{ application[6] or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label for="interview_date">Interview Date</label>
+      <input type="datetime-local" id="interview_date" name="interview_date" class="form-control" value="{{ application[7]|replace(' ', 'T') if application[7] else '' }}">
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" class="form-control">{{ application[8] or '' }}</textarea>
     </div>
 
     <div class="btn-row">
