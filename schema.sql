@@ -1,3 +1,5 @@
+DROP DATABASE IF EXISTS job_tracker;
+CREATE DATABASE job_tracker;
 USE job_tracker;
 
 CREATE TABLE companies (
