@@ -3,29 +3,61 @@
 {% block title %}Job Match{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width: 800px; margin: 0 auto;">
-  <h1 class="page-title">Job Match</h1>
-  <p class="page-subtitle">Search jobs by keyword.</p>
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+  <h1 class="page-title">Job Match Feature</h1>
+  <p class="page-subtitle">
+    Enter your skills and see jobs ranked by match percentage.
+  </p>
 
   <form method="POST">
     <div class="form-group">
-      <input type="text" name="keyword" class="form-control" placeholder="Enter keyword (e.g., Python, Developer)" required>
+      <label for="skills">Your Skills</label>
+      <input
+        type="text"
+        id="skills"
+        name="skills"
+        class="form-control"
+        placeholder="Example: Python, SQL, Flask"
+        value="{{ user_skills_text or '' }}"
+        required
+      >
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-primary">Search</button>
+      <button type="submit" class="btn btn-primary">Match Jobs</button>
     </div>
   </form>
 
+  {% if user_skills_text %}
+    <div style="margin-top: 25px;">
+      <p><strong>Your Skills:</strong> {{ user_skills_text }}</p>
+    </div>
+  {% endif %}
+
   {% if results %}
-  <div style="margin-top: 20px;">
-    <h2>Results:</h2>
-    <ul>
-      {% for job in results %}
-        <li>{{ job[0] }} ({{ job[1] }})</li>
+    <div style="margin-top: 20px;">
+      <h2 style="margin-bottom: 15px;">Matching Jobs:</h2>
+
+      {% for result in results %}
+        <div class="card" style="margin-top: 15px; background: #0f172a;">
+          <p style="margin: 0 0 8px 0;">
+            <strong>{{ loop.index }}. {{ result.job_title }}</strong> at
+            <strong>{{ result.company_name }}</strong>
+            - {{ result.match_percent }}%
+            ({{ result.matched_count }}/{{ result.total_count }} skills)
+          </p>
+
+          {% if result.missing_skills %}
+            <p style="margin: 0; color: #cbd5e1;">
+              Missing:
+              {{ result.missing_skills | join(", ") }}
+            </p>
+          {% endif %}
+        </div>
       {% endfor %}
-    </ul>
-  </div>
+    </div>
+  {% elif user_skills_text %}
+    <p style="margin-top: 20px;">No matching jobs found.</p>
   {% endif %}
 </div>
 {% endblock %}

@@ -64,15 +64,15 @@ VALUES
 ('Digital Innovations', 'Software', 'www.digitalinnovations.com', 'San Francisco', 'California'),
 ('Smart Tech Group', 'AI/ML', 'www.smarttech.com', 'Boston', 'Massachusetts');
 
-INSERT INTO jobs (company_id, job_title, salary_min, salary_max, job_type, date_posted)
+INSERT INTO jobs (company_id, job_title, job_description, salary_min, salary_max, job_type, date_posted)
 VALUES
-(1, 'Software Developer', 70000, 90000, 'Full-time', '2025-01-15'),
-(1, 'Database Administrator', 75000, 95000, 'Full-time', '2025-01-10'),
-(2, 'Data Analyst', 65000, 85000, 'Full-time', '2025-01-12'),
-(3, 'Cloud Engineer', 80000, 100000, 'Full-time', '2025-01-08'),
-(4, 'Junior Developer', 55000, 70000, 'Full-time', '2025-01-14'),
-(4, 'Senior Developer', 95000, 120000, 'Full-time', '2025-01-14'),
-(5, 'ML Engineer', 90000, 115000, 'Full-time', '2025-01-11');
+(1, 'Software Developer', 'Python, SQL, Flask', 70000, 90000, 'Full-time', '2025-01-15'),
+(1, 'Database Administrator', 'SQL, MySQL, Database Design', 75000, 95000, 'Full-time', '2025-01-10'),
+(2, 'Data Analyst', 'Python, SQL, Tableau', 65000, 85000, 'Full-time', '2025-01-12'),
+(3, 'Cloud Engineer', 'AWS, Linux, Docker, Cloud', 80000, 100000, 'Full-time', '2025-01-08'),
+(4, 'Junior Developer', 'JavaScript, HTML, CSS, React', 55000, 70000, 'Full-time', '2025-01-14'),
+(4, 'Senior Developer', 'Java, Spring, SQL', 95000, 120000, 'Full-time', '2025-01-14'),
+(5, 'ML Engineer', 'Python, Machine Learning, SQL', 90000, 115000, 'Full-time', '2025-01-11');
 
 INSERT INTO applications (job_id, application_date, status, resume_version, cover_letter_sent)
 VALUES

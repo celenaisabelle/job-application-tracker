@@ -23,7 +23,6 @@
           <th>Posting URL</th>
           <th>Date Posted</th>
           <th>Active</th>
-          <th>Created</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -49,7 +48,6 @@
             {% endif %}
           </td>
           <td>{{ job[8] or 'N/A' }}</td>
-          <td>{% if job[9] %}Yes{% else %}No{% endif %}</td>
           <td>{{ job[10] }}</td>
           <td>
             <div class="actions">

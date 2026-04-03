@@ -36,31 +36,67 @@ def home():
 @app.route("/job_match", methods=["GET", "POST"])
 def job_match():
     results = []
-    keyword = ""
+    user_skills_text = ""
 
     if request.method == "POST":
-        keyword = request.form["keyword"]
+        user_skills_text = request.form["skills"]
+
+        user_skills = [
+            skill.strip().lower()
+            for skill in user_skills_text.split(",")
+            if skill.strip()
+        ]
 
         conn = get_connection()
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT j.job_title, c.company_name, j.job_type, j.posting_url
+            SELECT j.job_title, c.company_name, j.job_description
             FROM jobs j
             JOIN companies c ON j.company_id = c.company_id
-            WHERE j.job_title LIKE %s
-               OR j.job_description LIKE %s
-               OR j.job_type LIKE %s
-               OR j.posting_url LIKE %s
             ORDER BY j.job_id DESC
-        """, (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"))
-
-        results = cursor.fetchall()
+        """)
+        jobs = cursor.fetchall()
 
         cursor.close()
         conn.close()
 
-    return render_template("job_match.html", results=results, keyword=keyword)
+        for job in jobs:
+            job_title = job[0]
+            company_name = job[1]
+            job_description = job[2] or ""
+
+            job_skills = [
+                skill.strip().lower()
+                for skill in job_description.split(",")
+                if skill.strip()
+            ]
+
+            matched_skills = [skill for skill in user_skills if skill in job_skills]
+            missing_skills = [skill for skill in user_skills if skill not in job_skills]
+
+            if len(user_skills) > 0:
+                match_percent = round((len(matched_skills) / len(user_skills)) * 100)
+            else:
+                match_percent = 0
+
+            if len(matched_skills) > 0:
+                results.append({
+                    "job_title": job_title,
+                    "company_name": company_name,
+                    "match_percent": match_percent,
+                    "matched_count": len(matched_skills),
+                    "total_count": len(user_skills),
+                    "missing_skills": missing_skills
+                })
+
+        results.sort(key=lambda x: x["match_percent"], reverse=True)
+
+    return render_template(
+        "job_match.html",
+        results=results,
+        user_skills_text=user_skills_text
+    )
 
 
 # -------------------------
